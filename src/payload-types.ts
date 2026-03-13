@@ -72,6 +72,24 @@ export interface Config {
     media: Media;
     categories: Category;
     users: User;
+    tenants: Tenant;
+    restaurants: Restaurant;
+    departments: Department;
+    positions: Position;
+    employees: Employee;
+    courses: Course;
+    lessons: Lesson;
+    quizzes: Quiz;
+    'quiz-attempts': QuizAttempt;
+    enrollments: Enrollment;
+    shifts: Shift;
+    'shift-assignments': ShiftAssignment;
+    tasks: Task;
+    checklists: Checklist;
+    'checklist-completions': ChecklistCompletion;
+    announcements: Announcement;
+    documents: Document;
+    'incident-reports': IncidentReport;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -88,6 +106,24 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    tenants: TenantsSelect<false> | TenantsSelect<true>;
+    restaurants: RestaurantsSelect<false> | RestaurantsSelect<true>;
+    departments: DepartmentsSelect<false> | DepartmentsSelect<true>;
+    positions: PositionsSelect<false> | PositionsSelect<true>;
+    employees: EmployeesSelect<false> | EmployeesSelect<true>;
+    courses: CoursesSelect<false> | CoursesSelect<true>;
+    lessons: LessonsSelect<false> | LessonsSelect<true>;
+    quizzes: QuizzesSelect<false> | QuizzesSelect<true>;
+    'quiz-attempts': QuizAttemptsSelect<false> | QuizAttemptsSelect<true>;
+    enrollments: EnrollmentsSelect<false> | EnrollmentsSelect<true>;
+    shifts: ShiftsSelect<false> | ShiftsSelect<true>;
+    'shift-assignments': ShiftAssignmentsSelect<false> | ShiftAssignmentsSelect<true>;
+    tasks: TasksSelect<false> | TasksSelect<true>;
+    checklists: ChecklistsSelect<false> | ChecklistsSelect<true>;
+    'checklist-completions': ChecklistCompletionsSelect<false> | ChecklistCompletionsSelect<true>;
+    announcements: AnnouncementsSelect<false> | AnnouncementsSelect<true>;
+    documents: DocumentsSelect<false> | DocumentsSelect<true>;
+    'incident-reports': IncidentReportsSelect<false> | IncidentReportsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -382,7 +418,17 @@ export interface Category {
  */
 export interface User {
   id: number;
-  name?: string | null;
+  name: string;
+  /**
+   * Определяет уровень доступа в системе
+   */
+  role: 'superAdmin' | 'tenantAdmin' | 'manager' | 'employee';
+  tenant?: (number | null) | Tenant;
+  restaurant?: (number | null) | Restaurant;
+  avatar?: (number | null) | Media;
+  phone?: string | null;
+  isActive?: boolean | null;
+  lastSeen?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -400,6 +446,64 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tenants".
+ */
+export interface Tenant {
+  id: number;
+  name: string;
+  /**
+   * Уникальный идентификатор, только латиница и цифры
+   */
+  slug: string;
+  logo?: (number | null) | Media;
+  plan: 'starter' | 'business' | 'network' | 'enterprise';
+  planExpiresAt?: string | null;
+  isActive?: boolean | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  billingEmail?: string | null;
+  maxLocations?: number | null;
+  settings?: {
+    timezone?: string | null;
+    language?: ('ru' | 'en') | null;
+    enableTraining?: boolean | null;
+    enableShifts?: boolean | null;
+    enableChecklists?: boolean | null;
+    enableIncidents?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "restaurants".
+ */
+export interface Restaurant {
+  id: number;
+  name: string;
+  tenant: number | Tenant;
+  logo?: (number | null) | Media;
+  type?: ('restaurant' | 'cafe' | 'bar' | 'fastfood' | 'coffee' | 'canteen' | 'pizzeria' | 'other') | null;
+  city?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  timezone?: string | null;
+  isActive?: boolean | null;
+  openingHours?:
+    | {
+        day?: ('mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun') | null;
+        open?: string | null;
+        close?: string | null;
+        isClosed?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -745,6 +849,596 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "departments".
+ */
+export interface Department {
+  id: number;
+  name: string;
+  restaurant: number | Restaurant;
+  description?: string | null;
+  /**
+   * Цвет для визуального отображения в расписании
+   */
+  color?: string | null;
+  icon?: ('kitchen' | 'hall' | 'bar' | 'delivery' | 'admin' | 'cleaning' | 'warehouse' | 'cashier') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "positions".
+ */
+export interface Position {
+  id: number;
+  name: string;
+  restaurant: number | Restaurant;
+  department?: (number | null) | Department;
+  accessLevel: 'employee' | 'shiftManager' | 'manager' | 'admin';
+  description?: string | null;
+  responsibilities?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  requirements?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  color?: string | null;
+  /**
+   * Базовая ставка для расчёта зарплаты
+   */
+  hourlyRate?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "employees".
+ */
+export interface Employee {
+  id: number;
+  fullName: string;
+  user?: (number | null) | User;
+  restaurant: number | Restaurant;
+  position?: (number | null) | Position;
+  department?: (number | null) | Department;
+  status?: ('active' | 'vacation' | 'sick' | 'fired' | 'probation') | null;
+  avatar?: (number | null) | Media;
+  phone?: string | null;
+  email?: string | null;
+  hireDate?: string | null;
+  birthDate?: string | null;
+  employmentType?: ('full' | 'part' | 'intern' | 'temporary') | null;
+  notes?: string | null;
+  emergencyContact?: {
+    name?: string | null;
+    relation?: string | null;
+    phone?: string | null;
+  };
+  documents?:
+    | {
+        type?: ('contract' | 'health' | 'passport' | 'inn' | 'other') | null;
+        title?: string | null;
+        file?: (number | null) | Media;
+        expiresAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  salary?: {
+    type?: ('hourly' | 'salary' | 'mixed') | null;
+    hourlyRate?: number | null;
+    monthlySalary?: number | null;
+    bankAccount?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courses".
+ */
+export interface Course {
+  id: number;
+  title: string;
+  restaurant?: (number | null) | Restaurant;
+  status?: ('draft' | 'published' | 'archived') | null;
+  isRequired?: boolean | null;
+  /**
+   * Через сколько месяцев нужно пройти курс повторно. 0 = один раз.
+   */
+  recertificationMonths?: number | null;
+  thumbnail?: (number | null) | Media;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  category?: ('menu' | 'safety' | 'service' | 'operations' | 'hr' | 'sales' | 'onboarding') | null;
+  estimatedDuration?: number | null;
+  /**
+   * Минимальный процент правильных ответов для прохождения
+   */
+  passingScore?: number | null;
+  /**
+   * Оставьте пустым — курс доступен всем
+   */
+  targetPositions?: (number | Position)[] | null;
+  targetDepartments?: (number | Department)[] | null;
+  certificateEnabled?: boolean | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lessons".
+ */
+export interface Lesson {
+  id: number;
+  title: string;
+  course: number | Course;
+  order?: number | null;
+  type: 'text' | 'video' | 'pdf' | 'quiz' | 'practical';
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Вставьте URL видео с YouTube, Vimeo или прямую ссылку
+   */
+  videoUrl?: string | null;
+  videoFile?: (number | null) | Media;
+  document?: (number | null) | Media;
+  practicalItems?:
+    | {
+        task: string;
+        description?: string | null;
+        requiresPhoto?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  duration?: number | null;
+  isMandatory?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quizzes".
+ */
+export interface Quiz {
+  id: number;
+  title: string;
+  lesson?: (number | null) | Lesson;
+  /**
+   * Привяжите к курсу для создания итогового теста
+   */
+  course?: (number | null) | Course;
+  passingScore: number;
+  /**
+   * 0 = без ограничения
+   */
+  timeLimit?: number | null;
+  maxAttempts?: number | null;
+  shuffleQuestions?: boolean | null;
+  showCorrectAnswers?: boolean | null;
+  questions: {
+    question: string;
+    image?: (number | null) | Media;
+    type: 'single' | 'multiple' | 'text' | 'boolean';
+    options?:
+      | {
+          text: string;
+          isCorrect?: boolean | null;
+          id?: string | null;
+        }[]
+      | null;
+    correctAnswer?: string | null;
+    booleanAnswer?: ('true' | 'false') | null;
+    /**
+     * Показывается после ответа на вопрос
+     */
+    explanation?: string | null;
+    points?: number | null;
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quiz-attempts".
+ */
+export interface QuizAttempt {
+  id: number;
+  employee: number | Employee;
+  quiz: number | Quiz;
+  score: number;
+  passed?: boolean | null;
+  timeTaken?: number | null;
+  answers?:
+    | {
+        questionIndex?: number | null;
+        selectedOptions?: string | null;
+        isCorrect?: boolean | null;
+        pointsEarned?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  attemptNumber?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "enrollments".
+ */
+export interface Enrollment {
+  id: number;
+  employee: number | Employee;
+  course: number | Course;
+  status: 'not_started' | 'in_progress' | 'completed' | 'failed' | 'overdue';
+  progress?: number | null;
+  completedLessons?:
+    | {
+        lesson?: (number | null) | Lesson;
+        completedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  dueDate?: string | null;
+  score?: number | null;
+  certificateIssuedAt?: string | null;
+  nextRecertificationAt?: string | null;
+  assignedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shifts".
+ */
+export interface Shift {
+  id: number;
+  /**
+   * Например: Утренняя смена, Вечерняя смена
+   */
+  name: string;
+  restaurant: number | Restaurant;
+  date: string;
+  startTime: string;
+  endTime: string;
+  department?: (number | null) | Department;
+  status?: ('draft' | 'published' | 'active' | 'completed' | 'cancelled') | null;
+  requiredCount?: number | null;
+  notes?: string | null;
+  employeeNotes?: string | null;
+  openedAt?: string | null;
+  closedAt?: string | null;
+  openedBy?: (number | null) | Employee;
+  closedBy?: (number | null) | Employee;
+  shiftReport?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  revenue?: number | null;
+  covers?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shift-assignments".
+ */
+export interface ShiftAssignment {
+  id: number;
+  shift: number | Shift;
+  employee: number | Employee;
+  position?: (number | null) | Position;
+  status?: ('scheduled' | 'confirmed' | 'completed' | 'absent' | 'late' | 'replacement') | null;
+  clockIn?: string | null;
+  clockOut?: string | null;
+  /**
+   * Рассчитывается автоматически при закрытии
+   */
+  hoursWorked?: number | null;
+  notes?: string | null;
+  managerNotes?: string | null;
+  isSwapRequest?: boolean | null;
+  swapWith?: (number | null) | Employee;
+  swapApprovedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tasks".
+ */
+export interface Task {
+  id: number;
+  title: string;
+  description?: string | null;
+  restaurant: number | Restaurant;
+  shift?: (number | null) | Shift;
+  assignedTo?: (number | null) | Employee;
+  category?: ('cleaning' | 'kitchen' | 'service' | 'inventory' | 'technical' | 'other') | null;
+  priority?: ('low' | 'normal' | 'high' | 'urgent') | null;
+  status?: ('pending' | 'in_progress' | 'done' | 'cancelled') | null;
+  dueTime?: string | null;
+  completedAt?: string | null;
+  completedBy?: (number | null) | Employee;
+  photo?: (number | null) | Media;
+  isRecurring?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checklists".
+ */
+export interface Checklist {
+  id: number;
+  title: string;
+  restaurant: number | Restaurant;
+  type: 'opening' | 'closing' | 'cleaning' | 'safety' | 'inventory' | 'other';
+  department?: (number | null) | Department;
+  frequency?: ('daily' | 'weekly' | 'monthly' | 'per_shift') | null;
+  isActive?: boolean | null;
+  description?: string | null;
+  items: {
+    title: string;
+    description?: string | null;
+    isRequired?: boolean | null;
+    requiresPhoto?: boolean | null;
+    category?: string | null;
+    id?: string | null;
+  }[];
+  estimatedTime?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checklist-completions".
+ */
+export interface ChecklistCompletion {
+  id: number;
+  checklist: number | Checklist;
+  restaurant: number | Restaurant;
+  shift?: (number | null) | Shift;
+  completedBy: number | Employee;
+  completedAt?: string | null;
+  overallStatus?: ('in_progress' | 'completed' | 'completed_with_issues' | 'failed') | null;
+  items?:
+    | {
+        itemTitle?: string | null;
+        isCompleted?: boolean | null;
+        notes?: string | null;
+        photo?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  managerApprovedBy?: (number | null) | Employee;
+  managerApprovedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "announcements".
+ */
+export interface Announcement {
+  id: number;
+  title: string;
+  restaurant: number | Restaurant;
+  priority?: ('normal' | 'high' | 'urgent') | null;
+  isPinned?: boolean | null;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  attachments?:
+    | {
+        file?: (number | null) | Media;
+        title?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Оставьте пустым — для всех
+   */
+  targetDepartments?: (number | Department)[] | null;
+  targetPositions?: (number | Position)[] | null;
+  publishedAt?: string | null;
+  expiresAt?: string | null;
+  author?: (number | null) | User;
+  /**
+   * Список сотрудников, подтвердивших прочтение
+   */
+  readBy?:
+    | {
+        employee?: (number | null) | Employee;
+        readAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents".
+ */
+export interface Document {
+  id: number;
+  title: string;
+  restaurant?: (number | null) | Restaurant;
+  category?: ('sop' | 'menu' | 'safety' | 'hr' | 'reports' | 'other') | null;
+  description?: string | null;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  file?: (number | null) | Media;
+  version?: string | null;
+  targetDepartments?: (number | Department)[] | null;
+  isPublic?: boolean | null;
+  tags?: string | null;
+  updatedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "incident-reports".
+ */
+export interface IncidentReport {
+  id: number;
+  title: string;
+  restaurant: number | Restaurant;
+  type: 'accident' | 'complaint' | 'quality' | 'equipment' | 'standard' | 'theft' | 'other';
+  severity?: ('low' | 'medium' | 'high' | 'critical') | null;
+  status?: ('open' | 'in_progress' | 'resolved' | 'closed') | null;
+  description: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  shift?: (number | null) | Shift;
+  reportedBy?: (number | null) | Employee;
+  involvedEmployees?: (number | Employee)[] | null;
+  photos?:
+    | {
+        photo?: (number | null) | Media;
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  resolution?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  resolvedBy?: (number | null) | User;
+  resolvedAt?: string | null;
+  preventiveMeasures?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -935,6 +1629,78 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'tenants';
+        value: number | Tenant;
+      } | null)
+    | ({
+        relationTo: 'restaurants';
+        value: number | Restaurant;
+      } | null)
+    | ({
+        relationTo: 'departments';
+        value: number | Department;
+      } | null)
+    | ({
+        relationTo: 'positions';
+        value: number | Position;
+      } | null)
+    | ({
+        relationTo: 'employees';
+        value: number | Employee;
+      } | null)
+    | ({
+        relationTo: 'courses';
+        value: number | Course;
+      } | null)
+    | ({
+        relationTo: 'lessons';
+        value: number | Lesson;
+      } | null)
+    | ({
+        relationTo: 'quizzes';
+        value: number | Quiz;
+      } | null)
+    | ({
+        relationTo: 'quiz-attempts';
+        value: number | QuizAttempt;
+      } | null)
+    | ({
+        relationTo: 'enrollments';
+        value: number | Enrollment;
+      } | null)
+    | ({
+        relationTo: 'shifts';
+        value: number | Shift;
+      } | null)
+    | ({
+        relationTo: 'shift-assignments';
+        value: number | ShiftAssignment;
+      } | null)
+    | ({
+        relationTo: 'tasks';
+        value: number | Task;
+      } | null)
+    | ({
+        relationTo: 'checklists';
+        value: number | Checklist;
+      } | null)
+    | ({
+        relationTo: 'checklist-completions';
+        value: number | ChecklistCompletion;
+      } | null)
+    | ({
+        relationTo: 'announcements';
+        value: number | Announcement;
+      } | null)
+    | ({
+        relationTo: 'documents';
+        value: number | Document;
+      } | null)
+    | ({
+        relationTo: 'incident-reports';
+        value: number | IncidentReport;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1283,6 +2049,13 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  role?: T;
+  tenant?: T;
+  restaurant?: T;
+  avatar?: T;
+  phone?: T;
+  isActive?: T;
+  lastSeen?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1299,6 +2072,464 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tenants_select".
+ */
+export interface TenantsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  logo?: T;
+  plan?: T;
+  planExpiresAt?: T;
+  isActive?: T;
+  contactEmail?: T;
+  contactPhone?: T;
+  billingEmail?: T;
+  maxLocations?: T;
+  settings?:
+    | T
+    | {
+        timezone?: T;
+        language?: T;
+        enableTraining?: T;
+        enableShifts?: T;
+        enableChecklists?: T;
+        enableIncidents?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "restaurants_select".
+ */
+export interface RestaurantsSelect<T extends boolean = true> {
+  name?: T;
+  tenant?: T;
+  logo?: T;
+  type?: T;
+  city?: T;
+  address?: T;
+  phone?: T;
+  email?: T;
+  timezone?: T;
+  isActive?: T;
+  openingHours?:
+    | T
+    | {
+        day?: T;
+        open?: T;
+        close?: T;
+        isClosed?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "departments_select".
+ */
+export interface DepartmentsSelect<T extends boolean = true> {
+  name?: T;
+  restaurant?: T;
+  description?: T;
+  color?: T;
+  icon?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "positions_select".
+ */
+export interface PositionsSelect<T extends boolean = true> {
+  name?: T;
+  restaurant?: T;
+  department?: T;
+  accessLevel?: T;
+  description?: T;
+  responsibilities?: T;
+  requirements?: T;
+  color?: T;
+  hourlyRate?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "employees_select".
+ */
+export interface EmployeesSelect<T extends boolean = true> {
+  fullName?: T;
+  user?: T;
+  restaurant?: T;
+  position?: T;
+  department?: T;
+  status?: T;
+  avatar?: T;
+  phone?: T;
+  email?: T;
+  hireDate?: T;
+  birthDate?: T;
+  employmentType?: T;
+  notes?: T;
+  emergencyContact?:
+    | T
+    | {
+        name?: T;
+        relation?: T;
+        phone?: T;
+      };
+  documents?:
+    | T
+    | {
+        type?: T;
+        title?: T;
+        file?: T;
+        expiresAt?: T;
+        id?: T;
+      };
+  salary?:
+    | T
+    | {
+        type?: T;
+        hourlyRate?: T;
+        monthlySalary?: T;
+        bankAccount?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courses_select".
+ */
+export interface CoursesSelect<T extends boolean = true> {
+  title?: T;
+  restaurant?: T;
+  status?: T;
+  isRequired?: T;
+  recertificationMonths?: T;
+  thumbnail?: T;
+  description?: T;
+  category?: T;
+  estimatedDuration?: T;
+  passingScore?: T;
+  targetPositions?: T;
+  targetDepartments?: T;
+  certificateEnabled?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lessons_select".
+ */
+export interface LessonsSelect<T extends boolean = true> {
+  title?: T;
+  course?: T;
+  order?: T;
+  type?: T;
+  content?: T;
+  videoUrl?: T;
+  videoFile?: T;
+  document?: T;
+  practicalItems?:
+    | T
+    | {
+        task?: T;
+        description?: T;
+        requiresPhoto?: T;
+        id?: T;
+      };
+  duration?: T;
+  isMandatory?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quizzes_select".
+ */
+export interface QuizzesSelect<T extends boolean = true> {
+  title?: T;
+  lesson?: T;
+  course?: T;
+  passingScore?: T;
+  timeLimit?: T;
+  maxAttempts?: T;
+  shuffleQuestions?: T;
+  showCorrectAnswers?: T;
+  questions?:
+    | T
+    | {
+        question?: T;
+        image?: T;
+        type?: T;
+        options?:
+          | T
+          | {
+              text?: T;
+              isCorrect?: T;
+              id?: T;
+            };
+        correctAnswer?: T;
+        booleanAnswer?: T;
+        explanation?: T;
+        points?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quiz-attempts_select".
+ */
+export interface QuizAttemptsSelect<T extends boolean = true> {
+  employee?: T;
+  quiz?: T;
+  score?: T;
+  passed?: T;
+  timeTaken?: T;
+  answers?:
+    | T
+    | {
+        questionIndex?: T;
+        selectedOptions?: T;
+        isCorrect?: T;
+        pointsEarned?: T;
+        id?: T;
+      };
+  attemptNumber?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "enrollments_select".
+ */
+export interface EnrollmentsSelect<T extends boolean = true> {
+  employee?: T;
+  course?: T;
+  status?: T;
+  progress?: T;
+  completedLessons?:
+    | T
+    | {
+        lesson?: T;
+        completedAt?: T;
+        id?: T;
+      };
+  startedAt?: T;
+  completedAt?: T;
+  dueDate?: T;
+  score?: T;
+  certificateIssuedAt?: T;
+  nextRecertificationAt?: T;
+  assignedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shifts_select".
+ */
+export interface ShiftsSelect<T extends boolean = true> {
+  name?: T;
+  restaurant?: T;
+  date?: T;
+  startTime?: T;
+  endTime?: T;
+  department?: T;
+  status?: T;
+  requiredCount?: T;
+  notes?: T;
+  employeeNotes?: T;
+  openedAt?: T;
+  closedAt?: T;
+  openedBy?: T;
+  closedBy?: T;
+  shiftReport?: T;
+  revenue?: T;
+  covers?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shift-assignments_select".
+ */
+export interface ShiftAssignmentsSelect<T extends boolean = true> {
+  shift?: T;
+  employee?: T;
+  position?: T;
+  status?: T;
+  clockIn?: T;
+  clockOut?: T;
+  hoursWorked?: T;
+  notes?: T;
+  managerNotes?: T;
+  isSwapRequest?: T;
+  swapWith?: T;
+  swapApprovedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tasks_select".
+ */
+export interface TasksSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  restaurant?: T;
+  shift?: T;
+  assignedTo?: T;
+  category?: T;
+  priority?: T;
+  status?: T;
+  dueTime?: T;
+  completedAt?: T;
+  completedBy?: T;
+  photo?: T;
+  isRecurring?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checklists_select".
+ */
+export interface ChecklistsSelect<T extends boolean = true> {
+  title?: T;
+  restaurant?: T;
+  type?: T;
+  department?: T;
+  frequency?: T;
+  isActive?: T;
+  description?: T;
+  items?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        isRequired?: T;
+        requiresPhoto?: T;
+        category?: T;
+        id?: T;
+      };
+  estimatedTime?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checklist-completions_select".
+ */
+export interface ChecklistCompletionsSelect<T extends boolean = true> {
+  checklist?: T;
+  restaurant?: T;
+  shift?: T;
+  completedBy?: T;
+  completedAt?: T;
+  overallStatus?: T;
+  items?:
+    | T
+    | {
+        itemTitle?: T;
+        isCompleted?: T;
+        notes?: T;
+        photo?: T;
+        id?: T;
+      };
+  managerApprovedBy?: T;
+  managerApprovedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "announcements_select".
+ */
+export interface AnnouncementsSelect<T extends boolean = true> {
+  title?: T;
+  restaurant?: T;
+  priority?: T;
+  isPinned?: T;
+  content?: T;
+  attachments?:
+    | T
+    | {
+        file?: T;
+        title?: T;
+        id?: T;
+      };
+  targetDepartments?: T;
+  targetPositions?: T;
+  publishedAt?: T;
+  expiresAt?: T;
+  author?: T;
+  readBy?:
+    | T
+    | {
+        employee?: T;
+        readAt?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents_select".
+ */
+export interface DocumentsSelect<T extends boolean = true> {
+  title?: T;
+  restaurant?: T;
+  category?: T;
+  description?: T;
+  content?: T;
+  file?: T;
+  version?: T;
+  targetDepartments?: T;
+  isPublic?: T;
+  tags?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "incident-reports_select".
+ */
+export interface IncidentReportsSelect<T extends boolean = true> {
+  title?: T;
+  restaurant?: T;
+  type?: T;
+  severity?: T;
+  status?: T;
+  description?: T;
+  shift?: T;
+  reportedBy?: T;
+  involvedEmployees?: T;
+  photos?:
+    | T
+    | {
+        photo?: T;
+        caption?: T;
+        id?: T;
+      };
+  resolution?: T;
+  resolvedBy?: T;
+  resolvedAt?: T;
+  preventiveMeasures?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
