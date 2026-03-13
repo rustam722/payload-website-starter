@@ -17,6 +17,25 @@ import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 
+// Restaurant Management SaaS Collections
+import { Tenants } from './collections/Tenants'
+import { Restaurants } from './collections/Restaurants'
+import { Departments } from './collections/Departments'
+import { Positions } from './collections/Positions'
+import { Employees } from './collections/Employees'
+import { Courses } from './collections/Courses'
+import { Lessons } from './collections/Lessons'
+import { Quizzes } from './collections/Quizzes'
+import { QuizAttempts } from './collections/QuizAttempts'
+import { Enrollments } from './collections/Enrollments'
+import { Shifts } from './collections/Shifts'
+import { ShiftAssignments } from './collections/ShiftAssignments'
+import { Tasks } from './collections/Tasks'
+import { Checklists, ChecklistCompletions } from './collections/Checklists'
+import { Announcements } from './collections/Announcements'
+import { Documents } from './collections/Documents'
+import { IncidentReports } from './collections/IncidentReports'
+
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
@@ -64,7 +83,37 @@ export default buildConfig({
       connectionString: process.env.POSTGRES_URL || '',
     },
   }),
-  collections: [Pages, Posts, Media, Categories, Users],
+  collections: [
+    // Core CMS
+    Pages,
+    Posts,
+    Media,
+    Categories,
+    Users,
+    // SaaS - Multi-tenancy
+    Tenants,
+    Restaurants,
+    // HR & Team
+    Departments,
+    Positions,
+    Employees,
+    // Training & Learning
+    Courses,
+    Lessons,
+    Quizzes,
+    QuizAttempts,
+    Enrollments,
+    // Shift Management
+    Shifts,
+    ShiftAssignments,
+    Tasks,
+    Checklists,
+    ChecklistCompletions,
+    // Operations
+    Announcements,
+    Documents,
+    IncidentReports,
+  ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   plugins: [
